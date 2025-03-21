@@ -1,0 +1,29 @@
+apiVersion: datadoghq.com/v2alpha1
+kind: DatadogAgent
+metadata:
+  name: datadogagent
+  namespace: datadog
+spec:
+  global:
+    clusterName: openshift-service-mesh
+    credentials:
+      apiKey: "<YOUR_DATADOG_API_KEY>"
+      appKey: "<YOUR_DATADOG_APP_KEY>"
+  features:
+    apm:
+      enabled: true
+      hostPortConfig:
+        enabled: true
+      extraEndpoints:
+        - host: datadog-agent.datadog
+          port: 8126
+    istio:
+      enabled: true
+    logCollection:
+      enabled: true
+      containerCollectAll: true
+  override:
+    nodeAgent:
+      hostNetwork: true
+    clusterAgent:
+      replicas: 2
