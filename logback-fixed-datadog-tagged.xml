@@ -1,11 +1,49 @@
-<?xml version="1.0"?><configuration><variable value="${LOG_DIR:-/logs}" name="LOG_DIR"/><variable value="${LOG_TARGET:-ROLLING}" name="LOG_TARGET"/><variable value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{stateManager:--}] [%thread] [%class{0}] %msg %n" name="LOG_PATTERN"/><variable value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%X{deviceId:--}] %msg %n" name="CLIENT_LOG_PATTERN"/><appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender"><encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"><pattern>${LOG_PATTERN}</pattern></encoder></appender><appender name="OTEL" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender"> </appender><appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender"><file>${LOG_DIR}/commerce-fixed.log</file><rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy"><!-- rollover daily --><fileNamePattern>${LOG_DIR}/commerce-fixed-%d{yyyy-MM-dd}.%i.log</fileNamePattern><!-- each file should be at most 100MB, keep 90 days worth of history, but at most 20GB --><maxFileSize>20MB</maxFileSize><maxHistory>90</maxHistory><totalSizeCap>20GB</totalSizeCap></rollingPolicy><encoder class="org.jumpmind.pos.util.logging.OpenposPatternLayoutEncoder"><pattern>${LOG_PATTERN}</pattern></encoder></appender><appender name="CLIENT-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender"><appender name="DEVICE_SPECIFIC_APPENDER_SIFT" class="ch.qos.logback.classic.sift.SiftingAppender"><discriminator><key>deviceId</key><defaultValue>unknown</defaultValue></discriminator><sift><appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender"><file>${LOG_DIR}/deviceId-${deviceId}.log</file><rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy"><fileNamePattern>${LOG_DIR}/deviceId-${deviceId}-%d{yyyy-MM-dd}.%i.log</fileNamePattern><maxFileSize>10MB</maxFileSize><maxHistory>10</maxHistory><totalSizeCap>100MB</totalSizeCap></rollingPolicy><encoder class="org.jumpmind.pos.util.logging.OpenposPatternLayoutEncoder"><pattern>${LOG_PATTERN}</pattern></encoder></appender></sift></appender><logger name="org" level="DEBUG"/><logger name="org.jumpmind" level="INFO"/><logger name="org.jumpmind.pos.persist.driver" level="WARN"/><logger name="org.jumpmind.bridge" level="DEBUG"/><logger name="org.jumpmind.pos.bridge.service.trans.BbwConsumeCommerceTransEndpoint" level="DEBUG"/><logger name="org.springframework" level="WARN"/><logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG"/><logger name="org.jumpmind.db.alter" level="DEBUG"/><logger name="org.eclipse.jetty" level="ERROR"/><logger name="org.jumpmind.symmetric.util.PropertiesFactoryBean" level="ERROR"/><logger name="org.jumpmind.symmetric.service.impl.ParameterService" level="ERROR"/><logger name="org.jumpmind.symmetric.db.SqlScript" level="ERROR"/><logger name="org.springframework.boot.autoconfigure.freemarker" level="ERROR"/><logger name="org.springdoc.core" level="ERROR"/><logger name="org.jumpmind.pos.core.flow.StateManagerLogger" level="INFO"><appender-ref ref="DEVICE_SPECIFIC_APPENDER_SIFT"/></logger><logger name="org.jumpmind.pos.core.service.ScreenService" level="INFO"><appender-ref ref="DEVICE_SPECIFIC_APPENDER_SIFT"/></logger><logger name="org.jumpmind.pos.core.service.ClientLogCollectorService" level="INFO" additivity="false"><appender-ref ref="CLIENT-ROLLING"/></logger>
-<appender name="DATADOG" class="ch.qos.logback.core.net.SocketAppender">
-  <remoteHost>localhost</remoteHost>
-  <port>10518</port>
-  <reconnectionDelay>10000</reconnectionDelay>
-  <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-    <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%logger{0}] [host:bbwwnn00219] [env:prod] [service:jumpmind-pos-bridge] %msg%n</pattern>
-  </encoder>
-</appender>
-<root level="INFO"><appender-ref ref="${LOG_TARGET}"/><appender-ref ref="OTEL"/>  <appender-ref ref="DATADOG"/>
-</root></configuration>
+<?xml version="1.0"?>
+<configuration>
+  <variable value="${LOG_DIR:-/logs}" name="LOG_DIR"/>
+  <variable value="${LOG_TARGET:-ROLLING}" name="LOG_TARGET"/>
+  <variable value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{stateManager:--}] [%thread] [%class{0}] %msg %n" name="LOG_PATTERN"/>
+  <variable value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%X{deviceId:--}] %msg %n" name="CLIENT_LOG_PATTERN"/>
+
+  <!-- Console appender -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>${LOG_PATTERN}</pattern>
+    </encoder>
+  </appender>
+
+  <!-- OpenTelemetry appender (default, unused) -->
+  <appender name="OTEL" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender">
+  </appender>
+
+  <!-- Rolling file appender -->
+  <appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_DIR}/commerce-fixed.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_DIR}/commerce-fixed-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <maxFileSize>20MB</maxFileSize>
+      <maxHistory>90</maxHistory>
+      <totalSizeCap>20GB</totalSizeCap>
+    </rollingPolicy>
+    <encoder class="org.jumpmind.pos.util.logging.OpenposPatternLayoutEncoder">
+      <pattern>${LOG_PATTERN}</pattern>
+    </encoder>
+  </appender>
+
+  <!-- Datadog TCP appender -->
+  <appender name="DATADOG" class="ch.qos.logback.core.net.SocketAppender">
+    <remoteHost>localhost</remoteHost>
+    <port>10518</port>
+    <reconnectionDelay>10000</reconnectionDelay>
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%logger{0}] [host:bbwwnn00219] [env:prod] [service:jumpmind-pos-bridge] %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- Root logger -->
+  <root level="INFO">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="ROLLING"/>
+    <appender-ref ref="DATADOG"/>
+  </root>
+</configuration>
